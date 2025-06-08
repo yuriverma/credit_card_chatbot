@@ -631,11 +631,13 @@ def health_check():
 if __name__ == '__main__':
     print("🚀 Starting Bank of Baroda Credit Card Chatbot...")
     
+    port = int(os.environ.get("PORT", 8000))  # Get port from env or default to 8000
+    
     # Initialize chatbot components
     if initialize_chatbot():
         print("✅ All systems ready!")
-        app.run(debug=True, host='0.0.0.0', port=8000)
+        app.run(debug=True, host='0.0.0.0', port=port)
     else:
         print("❌ Failed to initialize chatbot. Please check configuration.")
         print("🔧 Running in basic mode...")
-        app.run(debug=True, host='0.0.0.0', port=8000)
+        app.run(debug=True, host='0.0.0.0', port=port)
