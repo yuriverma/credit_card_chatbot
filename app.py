@@ -2,7 +2,6 @@ import os
 import json
 import smtplib
 import re
-from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -16,6 +15,13 @@ from langchain_community.chat_message_histories import ChatMessageHistory
 import gspread
 from google.oauth2.service_account import Credentials
 from dotenv import load_dotenv
+from datetime import datetime
+from zoneinfo import ZoneInfo  # use pytz if < Python 3.9
+import uuid
+
+
+def now_ist():
+    return datetime.now(ZoneInfo("Asia/Kolkata"))
 
 load_dotenv()
 
@@ -58,11 +64,11 @@ class CustomerData:
         self.interest_areas = ""
         self.lead_status = "New"
         self.eligible_cards = ""
-        self.last_interaction_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.last_interaction_date = now_ist().strftime("%Y-%m-%d %H:%M:%S")
         self.interaction_count = 1
         self.follow_up_required = "Yes"
         self.notes = ""
-        self.created_date = datetime.now().strftime("%Y-%m-%d")
+        self.created_date = now_ist().strftime("%Y-%m-%d")
         self.assigned_rm = "AI_Bot"
 
 def setup_google_sheets():
@@ -254,10 +260,9 @@ def extract_customer_info(session_id, user_message):
                 break
     
     # Update interaction data
-    customer_data.last_interaction_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    customer_data.last_interaction_date = now_ist().strftime("%Y-%m-%d %H:%M:%S")
     customer_data.interaction_count += 1
     customer_data.notes += f"Turn {customer_data.interaction_count}: {user_message[:100]}... "
-    
     conversation_logs[session_id] = customer_data
     return customer_data
 
@@ -332,8 +337,7 @@ def update_google_sheets(customer_data):
         
         # Generate unique customer ID if not exists
         if not customer_data.customer_id:
-            customer_data.customer_id = f"CUST_{datetime.now().strftime('%Y%m%d%H%M%S')}"
-        
+            customer_data.customer_id = f"CUST_{uuid.uuid4().hex[:8].upper()}"
         # Prepare row data according to your sheet structure
         row_data = [
             customer_data.customer_id,
@@ -370,7 +374,7 @@ def update_google_sheets(customer_data):
             interaction_sheet = sheet.worksheet("Interaction_Log")
             interaction_data = [
                 customer_data.customer_id,
-                datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                now_ist().strftime("%Y-%m-%d %H:%M:%S"),
                 "Chat Interaction",
                 customer_data.notes[-100:] if customer_data.notes else "",  # Last 100 chars
                 "AI Bot",
@@ -621,7 +625,7 @@ def health_check():
     """Health check endpoint"""
     return jsonify({
         "status": "healthy",
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": now_ist().isoformat(),
         "components": {
             "google_sheets": google_sheets_client is not None,
             "email_configured": bool(GMAIL_USER and GMAIL_PASS)
@@ -629,13 +633,11 @@ def health_check():
     })
 
 if __name__ == '__main__':
-    import os  # Just in case, import here too
-
     print("🚀 Starting Bank of Baroda Credit Card Chatbot...")
     
-    port = int(os.environ.get("PORT", 8000))  # get PORT env or default to 8000
-    print(f"Running Flask on port {port}...")  # Debug print
-    
+    port = int(os.environ.get("PORT", 8000))  # Get port from env or default to 8000
+
+    # Initialize chatbot components
     if initialize_chatbot():
         print("✅ All systems ready!")
         app.run(debug=True, host='0.0.0.0', port=port)
