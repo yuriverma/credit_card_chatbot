@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bank of Baroda Credit Card Assistant</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { margin-bottom: 10px; font-size: 2.2em; }
+        .header p { font-size: 1.1em; opacity: 0.9; }
+        .stats {
+            background: #f8f9fa;
+            padding: 15px;
+            display: flex;
+            justify-content: space-around;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            border-bottom: 1px solid #e9ecef;
+        }
+        .stat { flex: 1; }
+        .stat strong { display: block; font-size: 18px; color: #2c3e50; }
+        .chat-container {
+            height: 500px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f8f9fa;
+        }
+        .message {
+            margin-bottom: 15px;
+            padding: 15px 20px;
+            border-radius: 20px;
+            max-width: 85%;
+            animation: slideIn 0.3s ease-out;
+            line-height: 1.5;
+        }
+        .user-message {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        .bot-message {
+            background: white;
+            border: 1px solid #e9ecef;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-right: auto;
+        }
+        .pitch-message {
+            background: linear-gradient(135deg, #ffeaa7, #fdcb6e);
+            border-left: 4px solid #e17055;
+            margin-right: auto;
+            font-weight: 500;
+        }
+        .customer-info {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        .input-container {
+            display: flex;
+            padding: 25px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+            gap: 15px;
+        }
+        #userInput {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e9ecef;
+            border-radius: 30px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        #userInput:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        #sendBtn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            min-width: 120px;
+            font-weight: 600;
+        }
+        #sendBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        #sendBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 15px;
+            color: #6c757d;
+            font-style: italic;
+        }
+        .typing-indicator {
+            display: none;
+            padding: 15px 20px;
+            margin-bottom: 15px;
+            background: white;
+            border-radius: 20px;
+            max-width: 85%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(1); opacity: 0.5; }
+            40% { transform: scale(1.2); opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        .quick-actions {
+            padding: 15px 25px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .quick-btn {
+            background: white;
+            border: 1px solid #dee2e6;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .quick-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .success-message {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            padding: 12px 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        @media (max-width: 768px) {
+            .container { margin: 10px; border-radius: 10px; }
+            .header { padding: 20px; }
+            .header h1 { font-size: 1.8em; }
+            .chat-container { height: 400px; }
+            .stats { flex-direction: column; gap: 10px; }
+            .input-container { padding: 15px; flex-direction: column; gap: 10px; }
+            #sendBtn { width: 100%; }
+            .quick-actions { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏦 Bank of Baroda Credit Card Assistant</h1>
+            <p>AI-powered credit card advisor with personalized recommendations</p>
+        </div>
+        
+        <div class="stats">
+            <div class="stat">
+                <strong id="messageCount">0</strong>
+                <span>Messages</span>
+            </div>
+            <div class="stat">
+                <strong id="customerData">0</strong>
+                <span>Data Points</span>
+            </div>
+            <div class="stat">
+                <strong>Live</strong>
+                <span>Status</span>
+            </div>
+        </div>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="message bot-message">
+                🎉 <strong>Welcome to Bank of Baroda Credit Card Assistant!</strong><br><br>
+                I can help you with:<br>
+                • Answering questions about our credit cards<br>
+                • Checking your eligibility for different cards<br>
+                • Finding the perfect card for your lifestyle<br>
+                • Guiding you through the application process<br>
+                • Providing personalized recommendations<br><br>
+                <strong>How can I assist you today?</strong>
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typingIndicator">
+            <span></span><span></span><span></span> AI is thinking...
+        </div>
+        
+        <div class="loading" id="loading">
+            🤖 Processing your request...
+        </div>
+        
+        <div class="quick-actions">
+            <button class="quick-btn" onclick="quickMessage('What credit cards do you offer?')">Available Cards</button>
+            <button class="quick-btn" onclick="quickMessage('How do I check eligibility?')">Check Eligibility</button>
+            <button class="quick-btn" onclick="quickMessage('What are the benefits?')">Benefits</button>
+            <button class="quick-btn" onclick="quickMessage('How to apply?')">Apply Now</button>
+            <button class="quick-btn" onclick="quickMessage('My name is John and I earn 5 lakhs annually')">Get Recommendation</button>
+        </div>
+        
+        <div class="input-container">
+            <input type="text" id="userInput" placeholder="Type your message here..." onkeypress="handleKeyPress(event)">
+            <button id="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        let messageCount = 0;
+        let dataPointsCount = 0;
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        function quickMessage(message) {
+            document.getElementById('userInput').value = message;
+            sendMessage();
+        }
+
+        function showTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'block';
+            scrollToBottom();
+        }
+
+        function hideTypingIndicator() {
+            document.getElementById('typingIndicator').style.display = 'none';
+        }
+
+        function scrollToBottom() {
+            const chatContainer = document.getElementById('chatContainer');
+            setTimeout(() => {
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 100);
+        }
+
+        function updateStats() {
+            document.getElementById('messageCount').textContent = messageCount;
+            document.getElementById('customerData').textContent = dataPointsCount;
+        }
+
+        function addMessage(message, isUser = false, isSpecial = false) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            
+            let className = 'message ';
+            if (isUser) {
+                className += 'user-message';
+            } else if (isSpecial) {
+                className += 'pitch-message';
+            } else {
+                className += 'bot-message';
+            }
+            
+            messageDiv.className = className;
+            messageDiv.innerHTML = message;
+            
+            chatContainer.appendChild(messageDiv);
+            scrollToBottom();
+            
+            messageCount++;
+            updateStats();
+        }
+
+        function showError(message) {
+            const chatContainer = document.getElementById('chatContainer');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error-message';
+            errorDiv.innerHTML = `❌ <strong>Error:</strong> ${message}`;
+            chatContainer.appendChild(errorDiv);
+            scrollToBottom();
+        }
+
+        function showSuccess(message) {
+            const chatContainer = document.getElementById('chatContainer');
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.innerHTML = `✅ <strong>Success:</strong> ${message}`;
+            chatContainer.appendChild(successDiv);
+            scrollToBottom();
+        }
+
+        async function sendMessage() {
+            const userInput = document.getElementById('userInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const message = userInput.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addMessage(message, true);
+            
+            // Clear input and disable button
+            userInput.value = '';
+            sendBtn.disabled = true;
+            sendBtn.textContent = 'Sending...';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                
+                const data = await response.json();
+                
+                // Hide typing indicator
+                hideTypingIndicator();
+                
+                if (data.success) {
+                    // Add bot response
+                    addMessage(data.response);
+                    
+                    // Add personalized pitch if available
+                    if (data.personalized_pitch) {
+                        setTimeout(() => {
+                            addMessage(`🎯 <strong>Personalized Recommendation:</strong><br>${data.personalized_pitch}`, false, true);
+                        }, 1000);
+                    }
+                    
+                    // Show customer info if available
+                    if (data.customer_info && Object.keys(data.customer_info).length > 0) {
+                        const infoDiv = document.createElement('div');
+                        infoDiv.className = 'customer-info';
+                        
+                        let infoHtml = '<strong>📊 Customer Information Captured:</strong><br>';
+                        for (const [key, value] of Object.entries(data.customer_info)) {
+                            if (value) {
+                                infoHtml += `• ${key.replace('_', ' ').toUpperCase()}: ${value}<br>`;
+                                dataPointsCount++;
+                            }
+                        }
+                        
+                        infoDiv.innerHTML = infoHtml;
+                        document.getElementById('chatContainer').appendChild(infoDiv);
+                        scrollToBottom();
+                        updateStats();
+                    }
+                    
+                    // Show success messages
+                    if (data.sheets_updated) {
+                        showSuccess('Customer data saved to Google Sheets');
+                    }
+                    
+                    if (data.email_sent) {
+                        showSuccess('Summary sent to sales team');
+                    }
+                    
+                } else {
+                    showError(data.error || 'Something went wrong. Please try again.');
+                }
+                
+            } catch (error) {
+                hideTypingIndicator();
+                console.error('Error:', error);
+                showError('Failed to connect to the server. Please check your connection and try again.');
+            } finally {
+                // Re-enable button
+                sendBtn.disabled = false;
+                sendBtn.textContent = 'Send';
+                userInput.focus();
+            }
+        }
+
+        // Initialize the interface
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('userInput').focus();
+            updateStats();
+        });
+
+        // Handle form submission with Enter key
+        document.getElementById('userInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
