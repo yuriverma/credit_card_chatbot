@@ -25,9 +25,7 @@ The bot uses a combination of open-source and commercial LLMs to provide context
 - **Flask** — lightweight web framework hosting the chatbot UI.
 - **LangChain** — chaining LLM prompts and managing conversational flows.
 - **Google FLAN-T5** — fine-tuned LLM used to answer FAQs and knowledge base queries.
-- **OpenAI API** — used for generating personalized pitch messages.
 - **Google Sheets API** — read/write customer data in sheets.
-- **n8n / Make.com** — automation workflows integrating chatbot with Google Sheets and email.
 - **dotenv (.env)** — environment variable management for API keys and secrets.
 - **Git & GitHub** — version control and remote repository hosting.
 
