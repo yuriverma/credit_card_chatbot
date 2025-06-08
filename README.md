@@ -14,9 +14,7 @@ The bot uses a combination of open-source and commercial LLMs to provide context
 
 - Maintains contextual conversations and handles ambiguous queries.
 - Answers FAQs and SOP-based queries using Google FLAN-T5.
-- Generates personalized credit card pitch messages using LLMs (OpenAI API / Gemini).
 - Integrates with Google Sheets API to pull user history and update customer data.
-- Utilizes workflow automation tools (n8n / Make.com) for seamless data syncing and email notifications.
 - Provides conversation summaries automatically emailed to the sales team.
 
 ## Technologies Used
