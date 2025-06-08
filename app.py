@@ -629,11 +629,13 @@ def health_check():
     })
 
 if __name__ == '__main__':
+    import os  # Just in case, import here too
+
     print("🚀 Starting Bank of Baroda Credit Card Chatbot...")
     
-    port = int(os.environ.get("PORT", 8000))  # Get port from env or default to 8000
+    port = int(os.environ.get("PORT", 8000))  # get PORT env or default to 8000
+    print(f"Running Flask on port {port}...")  # Debug print
     
-    # Initialize chatbot components
     if initialize_chatbot():
         print("✅ All systems ready!")
         app.run(debug=True, host='0.0.0.0', port=port)
